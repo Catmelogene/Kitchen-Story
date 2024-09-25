@@ -68,6 +68,51 @@ app.delete("/api/delete/:productName", (req, res) => {
     });
 });
 
+// Cart functionalities
+app.post("/api/cart/add", (req, res) => {
+    const { productId } = req.body;
+    if (!req.session.cart) {
+        req.session.cart = {};
+    }
+    if (!req.session.cart[productId]) {
+        req.session.cart[productId] = 0;
+    }
+    req.session.cart[productId] += 1;
+    res.send(req.session.cart);
+});
+
+app.post("/api/cart/remove", (req, res) => {
+    const { productId } = req.body;
+    if (req.session.cart && req.session.cart[productId]) {
+        req.session.cart[productId] -= 1;
+        if (req.session.cart[productId] <= 0) {
+            delete req.session.cart[productId];
+        }
+    }
+    res.send(req.session.cart);
+});
+
+app.post("/api/cart/update", (req, res) => {
+    const { productId, quantity } = req.body;
+    if (!req.session.cart) {
+        req.session.cart = {};
+    }
+    req.session.cart[productId] = quantity;
+    if (req.session.cart[productId] <= 0) {
+        delete req.session.cart[productId];
+    }
+    res.send(req.session.cart);
+});
+
+app.post("/api/cart/checkout", (req, res) => {
+    req.session.cart = {};
+    res.send(req.session.cart);
+});
+
+app.get("/api/cart", (req, res) => {
+    res.send(req.session.cart || {});
+});
+
 //Sign-Up
 app.post("/register", (req, res) => {
 
@@ -121,6 +166,8 @@ app.get("/login", (req, res) => {
       res.send({ loggedIn: false });
     }
   });
+
+
 app.listen(3001, () => {
     console.log("running on port 3001");
 });
